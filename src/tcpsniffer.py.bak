@@ -1,4 +1,4 @@
-#!/home/hiro/Projects/tcpsniff/bin/python3.5
+#!/home/hiro/Projects/tcpsniff/bin
 
 
 import socket
@@ -11,8 +11,8 @@ while 1:
     raw_frame = rawSocket.recvfrom(65535)
     try:
         frame = netframes.EthFrame(raw_frame[0])
-    except ValueError as ex:
-        print(str(ex))
+    except ValueError, ex:
+    #    print(str(ex))
         continue
     frame.print_all_fields()
     frame.print_data()

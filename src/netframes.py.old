@@ -16,16 +16,11 @@ class EthFrame:
         self.headers["ethernet"] = struct.unpack("!6s6s2s", self.eth_hdr_str)
         self.fields["time"] = self.dt.time()
         self.fields["date"] = self.dt.date()
-        self.fields["src_mac"] = binascii.hexlify(
-            self.headers["ethernet"][0]).decode("ascii")
-        self.fields["dst_mac"] = binascii.hexlify(
-            self.headers["ethernet"][1]).decode("ascii")
-        self.fields["eth_type"] = binascii.hexlify(
-            self.headers["ethernet"][2]).decode("ascii")
+        self.fields["src_mac"] = binascii.hexlify(self.headers["ethernet"][0])
+        self.fields["dst_mac"] = binascii.hexlify(self.headers["ethernet"][1])
+        self.fields["eth_type"] = binascii.hexlify(self.headers["ethernet"][2])
         if self.fields["eth_type"] != "0800":
-            print(type(self.fields["eth_type"].decode("ascii")))
-            raise ValueError(
-                "IP Only! Protocol: %s" %str(self.fields['eth_type']))
+            raise ValueError("IP Only!")
         else:
             self.ip_hdr_str = self.frame[self.ETH_HDR_LEN: \
                 self.ETH_HDR_LEN + self.TCP_IP_HDR_BASE_LEN]
@@ -44,7 +39,7 @@ class EthFrame:
             self.fields["ip_ttl"] = self.headers["ip"][5]
             self.fields["ip_proto"] = self.headers["ip"][6]
             if self.fields["ip_proto"] != 6:
-                raise ValueError('TCP Only!')
+                raise ValueError("TCP Only!")
             else:
                 self.fields["ip_checksum"] = self.headers["ip"][7]
                 self.fields["ip_src_addr"] = \
@@ -66,54 +61,52 @@ class EthFrame:
                     (self.fields["tcp_off_res"] >> 4) * 4
                 self.fields["all_hdr_len"] = \
                     self.fields["eth_ip_hdr_len"] + self.fields["tcp_hdr_len"]
-                self.fields["data"] = \
-                    self.frame[self.fields["all_hdr_len"]:].decode("ascii")
+                self.fields["data"] = self.frame[self.fields["all_hdr_len"]:]
 
     def print_eth_fields(self):
-        print("Eth Info:")
-        print("Src MAC: " + self.fields["src_mac"] + " | Dst MAC : " + \
+        print "Eth Info:"
+        print "Src MAC: " + self.fields["src_mac"] + " | Dst MAC : " + \
               self.fields["dst_mac"] + " | Eth type: " + \
-             self.fields["eth_type"] \
-             + " | Date: " + str(self.fields["date"])+\
-             " | Time: " + str(self.fields["time"])+\
-              "\n")
+              self.fields["eth_type"] + " | Date: " + str(self.fields["date"])+\
+              " | Time: " + str(self.fields["time"])+\
+              "\n"
 
     def print_ip_fields(self):
-        print("IP Info:")
-        print("IP Ver: " + str(self.fields["ip_ver"]) + \
+        print "IP Info:"
+        print "IP Ver: " + str(self.fields["ip_ver"]) + \
               " | IP Hdr (Bytes): " + str(self.fields["ip_hdr_len_bytes"]) + \
               " | DSCP: " + str(self.fields["ip_dscp"]) + \
               " | ECN: " + str(self.fields["ip_ecn"]) + \
-              " | Pkt (Bytes): " + str(self.fields["ip_total_len"]))
-        print("ID: " + str(self.fields["ip_id"]) + \
+              " | Pkt (Bytes): " + str(self.fields["ip_total_len"])
+        print "ID: " + str(self.fields["ip_id"]) + \
               " | DF Flag: " + str(self.fields["ip_df_set"]) + \
               " | MF Flag: " + str(self.fields["ip_mf_set"]) + \
               " | Offset: " + str(self.fields["ip_offset"]) + \
-              " | Time to Live: " + str(self.fields["ip_ttl"]))
-        print("Protocol: " + str(self.fields["ip_proto"]) + \
+              " | Time to Live: " + str(self.fields["ip_ttl"])
+        print "Protocol: " + str(self.fields["ip_proto"]) + \
               " | Hdr Cheksum: " + str(self.fields["ip_checksum"]) + \
               " | Src IP: " + self.fields["ip_src_addr"] + \
-              " | Dst IP: " + self.fields["ip_dst_addr"] + "\n")
+              " | Dst IP: " + self.fields["ip_dst_addr"] + "\n"
 
     def print_tcp_fields(self):
-        print("TCP Info:")
-        print("Src Port: " + str(self.fields["tcp_src_port"]) + \
+        print "TCP Info:"
+        print "Src Port: " + str(self.fields["tcp_src_port"]) + \
               " | Dst Port: " + str(self.fields["tcp_dst_port"]) + \
               " | Seq Num: " + str(self.fields["tcp_seq"]) + \
-              " | ACK: " + str(self.fields["tcp_ack"]))
-        print("TCP Hdr Len (Bytes): " + str(self.fields["tcp_hdr_len"]) + "\n")
+              " | ACK: " + str(self.fields["tcp_ack"])
+        print "TCP Hdr Len (Bytes): " + str(self.fields["tcp_hdr_len"]) + "\n"
 
     def print_all_fields(self):
         self.print_eth_fields()
         self.print_ip_fields()
         self.print_tcp_fields()
-        print("----------------------------------------" + \
-              "----------------------------------------" + "\n")
+        print "----------------------------------------" + \
+              "----------------------------------------" + "\n"
 
     def print_data(self):
         if self.fields["data"].rstrip() != "":
-#            print("Data: ")
-            print(str(self.fields["data"]))
+            #print "Data: "
+            print self.fields["data"]
             #print "----------------------------------------" + \
             #      "----------------------------------------" + "\n"
 
