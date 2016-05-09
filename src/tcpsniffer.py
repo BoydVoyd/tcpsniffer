@@ -6,7 +6,7 @@ import netframes
 rawSocket = socket.socket(socket.PF_PACKET, socket.SOCK_RAW,
                           socket.htons(0x0003))
 try:
-    conn=psycopg2.connect("dbname='pfpsite' user='hiro' password='$nowCrash'")
+    conn=psycopg2.connect("dbname='pfpsite' user='hiro' password='$n0wCrash'")
 except psycopg2.Error as e:
     print("I am unable to connect to the database.")
     print(e.pgerror)
@@ -19,5 +19,6 @@ while 1:
     except ValueError as ex:
         print(str(ex))
         continue
-    frame.print_all_fields()
+#    frame.print_all_fields()
     frame.print_data()
+    frame.write_to_db(cur)

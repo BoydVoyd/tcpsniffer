@@ -22,9 +22,9 @@ class EthFrame:
             self.headers["ethernet"][0]).decode("ascii")
         self.fields["dst_mac"] = binascii.hexlify(
             self.headers["ethernet"][1]).decode("ascii")
-        self.fields["eth_type"] = binascii.hexlify(
+        self.fields["eth_type"] = "0x" + binascii.hexlify(
             self.headers["ethernet"][2]).decode("ascii")
-        if self.fields["eth_type"] != "0800":
+        if self.fields["eth_type"] != "0x0800":
             raise ValueError(
                 "IP Only! Protocol: %s" % str(self.fields['eth_type']))
         else:
@@ -71,7 +71,7 @@ class EthFrame:
                 self.fields["all_hdr_len"] = \
                     self.fields["eth_ip_hdr_len"] + self.fields["tcp_hdr_len"]
                 self.fields["data"] = \
-                    self.frame[self.fields["all_hdr_len"]:].decode("ascii")
+                    self.frame[self.fields["all_hdr_len"]:]
 
     def print_eth_fields(self):
         print("Eth Info:")
@@ -124,19 +124,21 @@ class EthFrame:
         return (byteval & (1 << pos)) != 0
 
     def write_to_db(self, cur):
-        insert = """INSERT INTO
-                     pfp_tcpdatagram (src_mac, dst_mac, eth_type_id, ip_ver,
+        insert = """INSERT INTO pfp_tcpdatagram
+                     (src_mac, dst_mac, eth_type_id, ip_ver,
                      ip_dscp, ip_ecn, ip_total_len, ip_id,
                      ip_df_set, ip_mf_set, ip_offset, ip_ttl, ip_proto,
                      ip_checksum, ip_src_addr, ip_dst_addr, ip_hdr_len_bytes,
                      tcp_src_port, tcp_dst_port, tcp_seq, tcp_ack, tcp_hdr_len,
                      data, dg_date, dg_time)
-                       VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s,
-                               %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s,
-                               %s, %s);"""
+                     SELECT %s, %s, id, %s, %s, %s, %s, %s, %s, %s, %s, %s,
+                            %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s,
+                            %s
+                     FROM pfp_ethtypes
+                     WHERE eth_type = '""" + str(self.fields["eth_type"]) + """';"""
 
         values = [self.fields["src_mac"], self.fields["dst_mac"],
-                 self.fields["eth_type"], self.fields["ip_ver"],
+                 self.fields["ip_ver"],
                  self.fields["ip_dscp"], self.fields["ip_ecn"],
                  self.fields["ip_total_len"], self.fields["ip_id"],
                  self.fields["ip_df_set"], self.fields["ip_mf_set"],
@@ -148,5 +150,6 @@ class EthFrame:
                  self.fields["tcp_ack"], self.fields["tcp_hdr_len"],
                  self.fields["data"], self.fields["date"], self.fields["time"]]
 
+
         cur.execute(insert, values)
-        cur.conn.commit()
+        cur.connection.commit()
